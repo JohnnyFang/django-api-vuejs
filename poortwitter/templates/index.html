@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang=”en”>
+ <head>
+ <meta charset=”utf-8">
+ <title>Poor Man's Twitter by Johnny Fang</title>
+ <meta name=”viewport” content=”width=device-width, initial-scale=1.0">
+ <meta name=”description” content=”A Poors man Twitter by Johnny Fang”>
+<meta name=”keywords” content=”vuejs, django, crudapp, restapi”>
+
+</head>
+<body>
+    <div id="starting">
+      <div class="container">
+        <div class="row">
+            <div>
+              <form v-on:submit.prevent="addTweet()">
+
+                <div class="form-group">
+                  <label for="name">Name</label>
+                  <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      placeholder="Enter your name"
+                      v-model="newTweet.name"
+                      required="required">
+                </div>
+                <div class="form-group">
+                  <label for="tweet">Tweet</label>
+                  <textarea
+                      class="form-control"
+                      id="tweet"
+                      placeholder="Enter your tweet"
+                      v-model="newTweet.tweet"
+                      required="required"
+                      rows="3"></textarea>
+                </div>
+
+                <div class="">
+                  <button type="submit" class="btn btn-primary">Publish</button>
+                </div>
+              </form>
+            </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="tweet in tweets">
+                <th scope="row">${tweet.timestamp}</th>
+                <td>${tweet.tweet}</td>
+                <td>${tweet.name}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  <!-- vue.js files -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.5"></script>
+ <script type="text/javascript">
+  Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+   new Vue({
+         el: '#starting',
+      delimiters: ['${','}'],
+       data: {
+         tweets: [],
+         loading: false,
+         message: null,
+         newTweet: { 'tweet': null, 'name': null },
+       },
+       mounted: function() {
+        this.getTweets();
+       },
+       methods: {
+        getTweets: function(){
+          this.loading = false;
+          this.$http.get('/api/tweet/')
+            .then((response) => {
+              this.tweets = response.data;
+              this.loading = false;
+            })
+            .catch((err) => {
+               this.loading = true;
+               console.log(err);
+            })
+        },
+        addTweet: function() {
+          this.loading = true;
+          this.$http.post('/api/tweet/',this.newTweet)
+              .then((response) => {
+                this.loading = false;
+                this.getTweets();
+              })
+              .catch((err) => {
+                this.loading = false;
+                console.log(err);
+              })
+        }
+    }
+   });
+ </script>
+</body>
+</html>
